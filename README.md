@@ -1,145 +1,154 @@
-# 🗺️ Desafio WAR Estruturado – Conquista de Territórios
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-Bem-vindo ao **Desafio WAR Estruturado!** Inspirado no famoso jogo de estratégia, este desafio convida você a programar diferentes versões do jogo WAR, evoluindo seus conhecimentos em **C** à medida que avança pelos níveis **Novato**, **Aventureiro** e **Mestre**.
+#define MAX_ITENS 10   // capacidade máxima da mochila
 
-A empresa **MateCheck** contratou você para criar uma versão estruturada do WAR. Cada nível propõe novas funcionalidades, conceitos e desafios de programação. **Você escolhe por onde começar!**
+// ---------- Estrutura do Item ----------
+typedef struct {
+    char nome[30];
+    char tipo[20];
+    int quantidade;
+} Item;
 
----
+// ---------- Protótipos das Funções ----------
+void inserirItem(Item mochila[], int *total);
+void removerItem(Item mochila[], int *total);
+void listarItens(Item mochila[], int total);
+void buscarItem(Item mochila[], int total);
 
-## 🧩 Nível Novato: Cadastro Inicial dos Territórios
+// ---------- Função Principal ----------
+int main() {
+    Item mochila[MAX_ITENS];  // vetor de structs
+    int total = 0;            // quantidade atual de itens
+    int opcao;
 
-### 🎯 Objetivo
+    do {
+        printf("\n=== MOCHILA DO AVENTUREIRO ===\n");
+        printf("1. Inserir item\n");
+        printf("2. Remover item\n");
+        printf("3. Listar itens\n");
+        printf("4. Buscar item\n");
+        printf("0. Sair\n");
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcao);
+        getchar(); // consumir o \n deixado pelo scanf
 
-- Criar uma `struct` chamada `Territorio`.
-- Usar um **vetor estático de 5 elementos** para armazenar os territórios.
-- Cadastrar os dados de cada território: **Nome**, **Cor do Exército**, e **Número de Tropas**.
-- Exibir o estado atual do mapa.
+        switch(opcao) {
+            case 1:
+                inserirItem(mochila, &total);
+                break;
+            case 2:
+                removerItem(mochila, &total);
+                break;
+            case 3:
+                listarItens(mochila, total);
+                break;
+            case 4:
+                buscarItem(mochila, total);
+                break;
+            case 0:
+                printf("Saindo do sistema...\n");
+                break;
+            default:
+                printf("Opcao invalida! Tente novamente.\n");
+        }
 
-### ⚙️ Funcionalidades
+    } while(opcao != 0);
 
-- Leitura de dados pelo terminal (`fgets` e `scanf`)
-- Impressão organizada dos dados de todos os territórios
+    return 0;
+}
 
-### 💡 Conceitos abordados
+// ---------- Implementação das Funções ----------
 
-- `struct`
-- Vetor estático
-- Entrada/saída com `scanf`, `fgets`, e `printf`
+// Inserir um novo item na mochila
+void inserirItem(Item mochila[], int *total) {
+    if (*total >= MAX_ITENS) {
+        printf("Mochila cheia! Nao e possivel adicionar mais itens.\n");
+        return;
+    }
 
-### 📥 Entrada
+    Item novo;
 
-O usuário digita o nome do território, a cor do exército dominante e o número de tropas para **cada um dos 5 territórios**.
+    printf("Nome do item: ");
+    fgets(novo.nome, sizeof(novo.nome), stdin);
+    novo.nome[strcspn(novo.nome, "\n")] = '\0'; // remove \n
 
-### 📤 Saída
+    printf("Tipo (arma, municao, cura...): ");
+    fgets(novo.tipo, sizeof(novo.tipo), stdin);
+    novo.tipo[strcspn(novo.tipo, "\n")] = '\0';
 
+    printf("Quantidade: ");
+    scanf("%d", &novo.quantidade);
+    getchar();
 
+    mochila[*total] = novo; // adiciona ao vetor
+    (*total)++;
 
-## 🧗‍♂️ Nível Aventureiro: Batalhas Estratégicas
+    printf("Item adicionado com sucesso!\n");
+}
 
-### 🎯 Objetivo
+// Remover item pelo nome
+void removerItem(Item mochila[], int *total) {
+    if (*total == 0) {
+        printf("Mochila vazia! Nenhum item para remover.\n");
+        return;
+    }
 
-- Substituir o vetor estático por **alocação dinâmica com `calloc`**
-- Criar uma função para **simular ataques entre dois territórios**
-- Utilizar números aleatórios para representar dados de batalha
+    char nome[30];
+    printf("Digite o nome do item a remover: ");
+    fgets(nome, sizeof(nome), stdin);
+    nome[strcspn(nome, "\n")] = '\0';
 
-### 🆕 Novidades em relação ao Nível Novato
+    for (int i = 0; i < *total; i++) {
+        if (strcmp(mochila[i].nome, nome) == 0) {
+            // sobrescreve com o próximo item
+            for (int j = i; j < *total - 1; j++) {
+                mochila[j] = mochila[j + 1];
+            }
+            (*total)--;
+            printf("Item removido com sucesso!\n");
+            return;
+        }
+    }
 
-- Alocação dinâmica de memória com `calloc`
-- Uso de **ponteiros**
-- Laço interativo para o jogador escolher **territórios para atacar e defender**
-- Simulação de dados de ataque e defesa com `rand()`
+    printf("Item nao encontrado.\n");
+}
 
-### ⚙️ Funcionalidades
+// Listar todos os itens
+void listarItens(Item mochila[], int total) {
+    if (total == 0) {
+        printf("Mochila vazia!\n");
+        return;
+    }
 
-- Cadastro dos territórios (como no Nível Novato)
-- Fase de ataque com:
-  - Escolha de atacante e defensor
-  - Dados de ataque/defesa
-  - Lógica:
-    - Se atacante vence → defensor perde 1 tropa
-    - Se defensor perde todas → território é conquistado
-    - Empates favorecem o atacante
+    printf("\n--- Itens na mochila ---\n");
+    for (int i = 0; i < total; i++) {
+        printf("%d. Nome: %s | Tipo: %s | Quantidade: %d\n",
+               i + 1, mochila[i].nome, mochila[i].tipo, mochila[i].quantidade);
+    }
+}
 
-### 💡 Conceitos abordados
+// Buscar item pelo nome
+void buscarItem(Item mochila[], int total) {
+    if (total == 0) {
+        printf("Mochila vazia!\n");
+        return;
+    }
 
-- Ponteiros
-- `calloc` / `free`
-- Aleatoriedade com `rand()` / `srand()`
-- Funções para modularização
+    char nome[30];
+    printf("Digite o nome do item a buscar: ");
+    fgets(nome, sizeof(nome), stdin);
+    nome[strcspn(nome, "\n")] = '\0';
 
-### 📥 Entrada
+    for (int i = 0; i < total; i++) {
+        if (strcmp(mochila[i].nome, nome) == 0) {
+            printf("Item encontrado!\n");
+            printf("Nome: %s | Tipo: %s | Quantidade: %d\n",
+                   mochila[i].nome, mochila[i].tipo, mochila[i].quantidade);
+            return;
+        }
+    }
 
-- Território **atacante** (1 a 5)
-- Território **defensor** (1 a 5)
-
-### 📤 Saída
-
-Exibição do resultado da batalha, dados sorteados e mudanças no mapa.
-
-
-
-## 🧠 Nível Mestre: Missões e Modularização Total
-
-### 🎯 Objetivo
-
-- Dividir o código em funções bem definidas
-- Implementar um **sistema de missões**
-- Verificar cumprimento da missão
-- Aplicar **boas práticas** (uso de `const`, modularização, etc.)
-
-### 🆕 Diferenças em relação ao Nível Aventureiro
-
-- Modularização total em funções
-- Missões aleatórias atribuídas:
-  1. Destruir o exército **Verde**
-  2. Conquistar **3 territórios**
-- Menu interativo com opções
-
-### ⚙️ Funcionalidades
-
-- Inicialização automática dos territórios
-- Menu principal com 3 opções:
-  1. Atacar
-  2. Verificar Missão
-  3. Sair
-- Verificação de vitória da missão
-
-### 💡 Conceitos abordados
-
-- Modularização
-- `const` correctness
-- Estruturação em múltiplas funções
-- Passagem por referência
-
-### 📥 Entrada
-
-- Ações do jogador via menu:
-  - `1` - Atacar
-  - `2` - Verificar Missão
-  - `0` - Sair
-- Escolha de territórios para ataque
-
-### 📤 Saída
-
-- Mapa atualizado
-- Resultados das batalhas
-- Verificação da missão
-- Mensagem de vitória
-
-
-
-## 🏁 Conclusão
-
-Com este **Desafio WAR Estruturado**, você praticará fundamentos essenciais da linguagem **C** de forma **divertida e progressiva**.
-
-Cada nível foca em um conjunto de habilidades:
-
-- 🟢 **Novato**: `struct`, vetor, entrada/saída
-- 🔵 **Aventureiro**: ponteiros, memória dinâmica, lógica de jogo
-- 🟣 **Mestre**: modularização, design limpo, sistema de missões
-
-
-
-🚀 **Boa sorte! Avance nos níveis e torne-se um mestre da programação estratégica!**
-
-> Equipe de Ensino – MateCheck
+    printf("Item nao encontrado.\n");
+}
